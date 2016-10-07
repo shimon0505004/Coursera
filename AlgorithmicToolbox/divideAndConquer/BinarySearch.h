@@ -9,12 +9,18 @@ namespace BinarySearch {
 		const typename std::vector<T>::const_iterator& end,
 		const T& key);
 
+	template<typename T>
+	int binary_search(const std::vector<T>& inputArray,
+		const int& begin,
+		const int& end,
+		const T& key);
+
 }
 
 template<typename T>
 int BinarySearch::binary_search(const std::vector<T>& inputArray, const T& key)
 {
-	return binary_search(inputArray, inputArray.begin(), inputArray.end(), key);
+	return binary_search(inputArray, 0, (int)inputArray.size(), key);
 }
 
 template<typename T>
@@ -46,5 +52,37 @@ int BinarySearch::binary_search(const std::vector<T>& inputArray,
 			return binary_search(inputArray, begin, begin + middleElementIndex, key);
 		else
 			return binary_search(inputArray, begin + middleElementIndex + 1, end, key);
+	}
+}
+
+template<typename T>
+int BinarySearch::binary_search(const std::vector<T>& inputArray,
+	const int& begin,
+	const int& end,
+	const T& key)
+{
+	if (begin < 0 || end >(int)inputArray.size())
+		return -1;
+
+	if (begin >= end)
+		return -1;
+
+	if (end - begin == 1)
+	{
+		if (key == inputArray[begin])
+			return begin;
+		else
+			return -1;
+	}
+	else
+	{
+		int middleElementIndex = begin + floor((end - begin) / 2);
+		if (key == inputArray[middleElementIndex])
+			return middleElementIndex;
+		else if (key < inputArray[middleElementIndex])
+			return binary_search(inputArray, begin, middleElementIndex, key);
+		else
+			return binary_search(inputArray, middleElementIndex + 1, end, key);
+
 	}
 }
