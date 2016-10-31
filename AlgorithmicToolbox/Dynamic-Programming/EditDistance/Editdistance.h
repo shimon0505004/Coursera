@@ -5,16 +5,27 @@
 
 namespace EditDistance
 {
+	typedef std::vector<int> Row;
+	typedef std::vector<Row> Matrix;
+	Matrix editDistMat;
+	std::string firstString;
+	std::string secondString;
+
 	int editDistance(std::string string1, std::string string2);
+	void outputAlignment(int string1index
+		, int string2index);
 };
 
 int EditDistance::editDistance(std::string string1
 	, std::string string2)
 {
-	typedef std::vector<int> Row;
-	typedef std::vector<Row> Matrix;
+	editDistMat.clear();
+	firstString.clear();
+	secondString.clear();
+	firstString = std::string(string1);
+	secondString = std::string(string2);
 
-	Matrix editDistMat(string1.length() + 1, Row(string2.length() + 1));
+	editDistMat = Matrix(string1.length() + 1, Row(string2.length() + 1));
 	for (int rowIndex = 0
 		; rowIndex <= string1.length()
 		; rowIndex++)
@@ -25,7 +36,6 @@ int EditDistance::editDistance(std::string string1
 		{
 			editDistMat[rowIndex][colIndex] = 0;
 		}
-
 	}
 
 
@@ -70,7 +80,41 @@ int EditDistance::editDistance(std::string string1
 		}
 
 	}
+	outputAlignment(string1.length(), string2.length());
 
 	return editDistMat[string1.length()][string2.length()];
 }
+
+void EditDistance::outputAlignment(int string1index
+	, int string2index)
+{
+	if (string1index == 0
+		&& string2index == 0)
+	{
+		return;
+	}
+
+	if (string1index > 0
+		&& (editDistMat[string1index][string2index]
+			== editDistMat[string1index - 1][string2index] + 1))
+	{
+		outputAlignment(string1index - 1, string2index);
+		std::cout << firstString.at(string1index-1) << " " << "-" << std::endl;
+	}
+	else if (string2index > 0
+		&& (editDistMat[string1index][string2index]
+			== editDistMat[string1index][string2index-1] + 1))
+	{
+		outputAlignment(string1index, string2index-1);
+		std::cout << "-" << " "<<secondString.at(string2index-1) << std::endl;
+	}
+	else
+	{
+		outputAlignment(string1index-1, string2index - 1);
+		std::cout << firstString.at(string1index-1) << " " << secondString.at(string2index-1) << std::endl;
+	}
+}
+
+
+
 #endif EDIT_DISTANCE
