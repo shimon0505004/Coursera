@@ -12,13 +12,22 @@ struct BinaryTreeNode
 	int size;
 	int parent;
 
-	BinaryTreeNode() {};
+	BinaryTreeNode() 
+	{
+		this->key = -1;
+		this->leftIndex = -1;
+		this->rightIndex = -1;
+		this->size = -1;
+		this->parent = -1;
+	};
 
 	BinaryTreeNode(int key, int leftIndex, int rightIndex)
 	{
 		this->key = key;
 		this->leftIndex = leftIndex;
 		this->rightIndex = rightIndex;
+		this->size = -1;
+		this->parent = -1;
 	}
 };
 
@@ -30,7 +39,7 @@ public:
 	void inorder_recursive(int rootIndex = 0);
 	void preorder_recursive(int rootIndex = 0);
 	void postorder_recursive(int rootIndex = 0);
-	bool is_bst(vector<int>& list, int rootIndex = 0);
+	bool is_bst(vector<BinaryTreeNode>& list, int rootIndex = 0);
 	/*
 	void inorder_iterative(int rootIndex = 0);
 	void preorder_iterative(int rootIndex = 0);
@@ -51,8 +60,9 @@ int BinaryTree::add_node(int atIndex, int key, int leftIndex, int rightIndex)
 	if (atIndex >= mBinarySearchTree.size())
 		return -1;
 
-	BinaryTreeNode node(key, leftIndex, rightIndex);
-	mBinarySearchTree.at(atIndex) = node;
+	mBinarySearchTree.at(atIndex).key = key;
+	mBinarySearchTree.at(atIndex).leftIndex = leftIndex;
+	mBinarySearchTree.at(atIndex).rightIndex = rightIndex;
 
 	if(leftIndex>=0 && leftIndex< mBinarySearchTree.size())
 		mBinarySearchTree.at(leftIndex).parent = atIndex;
@@ -119,7 +129,7 @@ void BinaryTree::postorder_recursive(int rootIndex)
 	}
 }
 
-bool BinaryTree::is_bst(vector<int>& list, int rootIndex)
+bool BinaryTree::is_bst(vector<BinaryTreeNode>& list, int rootIndex)
 {
 	if (rootIndex < 0 || rootIndex >= mBinarySearchTree.size())
 		return true;
@@ -130,10 +140,18 @@ bool BinaryTree::is_bst(vector<int>& list, int rootIndex)
 		if (!retval1)
 			return false;
 
-		if (list.size() >0 && list.back() > node.key)
-			return false;
-
-		list.push_back(node.key);
+		if (list.size() > 0)
+		{
+			if (list.back().key > node.key)
+				return false;
+			else if (list.back().key == node.key)
+			{
+				if (list.back().parent == rootIndex)
+					if (node.leftIndex != -1 && mBinarySearchTree.at(node.leftIndex).key == list.back().key)
+						return false;
+			}
+		}
+		list.push_back(node);
 
 		auto retval3 = is_bst(list,node.rightIndex);
 		if (!retval3)
@@ -173,7 +191,7 @@ void test_if_binary_search_tree()
 		cin >> key >> left_index >> right_index;
 		tree.add_node(index, key, left_index, right_index);
 	}
-	vector<int> sortedList(0);
+	vector<BinaryTreeNode> sortedList(0);
 	if (tree.is_bst(sortedList))
 		cout << "CORRECT" << endl;
 	else
