@@ -1,92 +1,93 @@
-#include<iostream>
-#include<string>
-#include<vector>
+#include <iostream>
+#include <string>
+#include <vector>
 
 using std::string;
+typedef unsigned long long ull;
 
 struct Data {
-	std::string pattern, text;
+    string pattern, text;
 };
 
 Data read_input() {
-	Data data;
-	std::cin >> data.pattern >> data.text;
-	return data;
-}
-
-size_t hash_value(std::string str, unsigned long long base, unsigned long long  prime)
-{
-	int hashCode = 0;
-	for (int index = 0; index < str.length(); index++)
-	{
-		hashCode = ((base * hashCode) % prime );
-		hashCode = (hashCode + str[index]) % prime;
-	}
-	return hashCode;
-}
-
-std::vector<size_t> hash_lookup_array(std::string text
-	, int patternLength
-	, unsigned long long base
-	, unsigned long long prime)
-{
-	std::vector<size_t> hashArr(text.length() - patternLength + 1);
-	hashArr[0] = hash_value(text.substr(0, patternLength), base, prime);
-	size_t highestRadix = 1;
-	for(int counter = 0; counter< patternLength ; counter++) 
-	{
-		highestRadix = (highestRadix * base) % prime;
-	}
-
-	for (int index = 1; index <= text.length() - patternLength; index++)
-	{
-		/*
-		int tempHashCode = (base * hashArr[index - 1]) % prime;
-		tempHashCode = (tempHashCode + text[index + patternLength - 1]) % prime;
-		int valueToSubtract = (prime - (highestRadix * text[index - 1])) % prime;
-		tempHashCode = (tempHashCode + valueToSubtract) % prime;
-		hashArr[index] = tempHashCode;
-		*/
-		hashArr[index] = hash_value(text.substr(index, patternLength), base, prime);
-	}
-	return hashArr;
-}
-
-std::vector<int> rabin_karp_implementation(std::string text, std::string pattern)
-{
-	std::vector<int> answerIndexArr;
-	unsigned long long base = 256; // number of characters in unicode alphabet 0 ~ 255
-	unsigned long long prime = 16777213; // a large prime > base * base;
-	size_t patternHash = hash_value(pattern, base, prime);
-	auto hashArr = hash_lookup_array(text, pattern.length(), base, prime);
-	for (int index = 0; index < hashArr.size(); index++)
-	{
-		if (hashArr[index] == patternHash)
-		{
-			if (text.substr(index, pattern.length()) == pattern)
-			{
-				answerIndexArr.push_back(index);
-			}
-		}
-	}
-	return answerIndexArr;
+    Data data;
+    std::cin >> data.pattern >> data.text;
+    return data;
 }
 
 void print_occurrences(const std::vector<int>& output) {
-	for (size_t i = 0; i < output.size(); ++i)
-		std::cout << output[i] << " ";
-	std::cout << "\n";
+    for (size_t i = 0; i < output.size(); ++i)
+        std::cout << output[i] << " ";
+    std::cout << "\n";
 }
 
 std::vector<int> get_occurrences(const Data& input) {
-	return rabin_karp_implementation(input.text, input.pattern);
+    const string& pat = input.pattern, txt = input.text;
+    std::vector<int> ans;
+	std::vector<int> rollingHashForText(txt.size() - pat.size() + 1);
+
+	int prime = 101;	//prime
+	int x = 256;		//alphabet
+
+	int baseOffset = 1;
+
+	//For a pattern with n+1 characters, 
+	//the polynomial is going to look like the following (x is the base , or size of the alphabet):
+	//Poly(pattern) = x^n * pattern[0] + x^n-1 * pattern[1] + ... + x * pattern[n-1] + pattern[n]
+	//hash(pattern) = Poly(pattern) % prime
+	//To calculate rolling hash for pattern starting from index 1 and ending at index (n+1)
+	// Poly(pattern_1) = (Poly(pattern_0) - x^n pattern[0]) * x + pattern[n+1]
+	// For calculating rolling hash, we need to store the value of x^n 
+	// or the value of base ^ (patternLength -1) as a offset.
+	for (int index = 0; index < pat.length() - 1; index++)
+	{
+		baseOffset = (baseOffset * x) % prime;
+	}
+
+	int patternHash = 0;
+	rollingHashForText[0] = 0;
+	for (int index = 0; index < pat.length(); index++)
+	{
+		patternHash = (x*patternHash + pat[index]) % prime;
+		rollingHashForText[0] = (x*rollingHashForText[0] + txt[index]) % prime;
+	}
+
+	for (int index = 1; index <= txt.size() - pat.size(); index++)
+	{
+		auto nextChar = txt[index - 1 + pat.size()];
+		auto charToRemove = txt[index - 1];
+		int offsetToRemove = baseOffset * charToRemove;
+
+		rollingHashForText[index] = ((rollingHashForText[index - 1] - offsetToRemove) * x + nextChar) % prime;
+		if (rollingHashForText[index] < 0)
+			rollingHashForText[index] += prime;
+	}
+
+	for (int index = 0; index < rollingHashForText.size(); index++)
+	{
+		if (patternHash == rollingHashForText[index])
+		{
+			//check for collision
+			int subIndex = 0;
+			for (subIndex = 0; subIndex < pat.length(); subIndex++)
+			{
+				if (pat[subIndex] != txt[index + subIndex])
+					break;
+			}
+			if (subIndex == pat.length())
+			{
+				//matches
+				ans.push_back(index);;
+			}
+		}
+	}
+
+    return ans;
 }
 
-int main(void)
-{
-	print_occurrences(get_occurrences(read_input()));
-	return 0;
+
+int main() {
+    std::ios_base::sync_with_stdio(false);
+    print_occurrences(get_occurrences(read_input()));
+    return 0;
 }
-
-
-
