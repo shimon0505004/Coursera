@@ -135,7 +135,7 @@ bool MinHeap<T>::isHeap(const int & index)
 	if (isValid(index))
 	{
 		isHeap = true;
-		for (int pos = index; index < heapSize; index++)
+		for (int pos = index; pos < heapSize; pos++)
 		{
 			auto leftChild = leftChild(pos);
 			auto rightChild = rightChild(pos);
