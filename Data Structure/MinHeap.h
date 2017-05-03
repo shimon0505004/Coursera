@@ -46,9 +46,8 @@ private:
 template<typename T>
 void MinHeap<T>::insert(const T& input)
 {
-	int position = heapArr.size();
 	heapArr.push_back(input);
-	auto finalPosition = siftUp(position);
+	auto finalPosition = siftUp(heapArr.size() -1 );
 	heapSize = heapArr.size();
 	return;
 }
@@ -73,6 +72,7 @@ int MinHeap<T>::siftUp(const int & index)
 			}
 		}
 	}
+	
 	return finalPosition;
 }
 
